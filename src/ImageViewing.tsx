@@ -46,6 +46,7 @@ type Props = {
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
   delayLongPress?: number;
+  rotate?: string;
   ImageComponent?: ComponentType<{ children: ReactNode; imageSrc: ImageSource; imageIndex: number }>;
   HeaderComponent?: ComponentType<{ imageIndex: number }>;
   FooterComponent?: ComponentType<{ imageIndex: number }>;
@@ -71,6 +72,7 @@ function ImagesViewer({
   swipeToCloseEnabled,
   doubleTapToZoomEnabled,
   delayLongPress = DEFAULT_DELAY_LONG_PRESS,
+  rotate,
   ImageComponent,
   HeaderComponent,
   FooterComponent,
@@ -120,7 +122,8 @@ function ImagesViewer({
       supportedOrientations={["portrait"]}
       hardwareAccelerated
     >
-      <StatusBarManager presentationStyle={presentationStyle} />
+		<View style={rotate ? {transform: [{rotate}]} : null}>
+		<StatusBarManager presentationStyle={presentationStyle} />
       <View style={[styles.container, { opacity, backgroundColor }]}>
         <Animated.View style={[styles.header, { transform: headerTransform }]}>
           {typeof HeaderComponent !== "undefined" ? (
@@ -176,6 +179,7 @@ function ImagesViewer({
           </Animated.View>
         )}
       </View>
+	</View>
     </Modal>
   );
 }
