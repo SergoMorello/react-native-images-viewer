@@ -2,6 +2,8 @@
 
 > React Native modal component for viewing images as a sliding gallery.
 
+# include ImageRender
+
 [![npm version](https://badge.fury.io/js/react-native-image-viewing.svg)](https://badge.fury.io/js/react-native-image-viewing)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
@@ -11,8 +13,6 @@
 - 🔥Custom header and footer components
 - 🔥Uses VirtualizedList to optimize image loading and rendering
 
-Try with Expo: https://expo.io/@antonkalinin/react-native-image-viewing
-
 <p align="center">
   <img src="https://github.com/jobtoday/react-native-image-viewing/blob/master/demo.gif?raw=true" height="480" />
 </p>
@@ -20,19 +20,13 @@ Try with Expo: https://expo.io/@antonkalinin/react-native-image-viewing
 ## Installation
 
 ```bash
-yarn add react-native-image-viewing
-```
-
-or
-
-```bash
-npm install --save react-native-image-viewing
+npm install --save react-native-images-viewer
 ```
 
 ## Usage
 
 ```jsx
-import ImageView from "react-native-image-viewing";
+import ImageView from "react-native-images-viewer";
 
 const images = [
   {

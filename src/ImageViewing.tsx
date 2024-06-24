@@ -6,7 +6,13 @@
  *
  */
 
-import React, { ComponentType, useCallback, useRef, useEffect } from "react";
+import React, {
+	useCallback,
+	useRef,
+	useEffect,
+	type ReactNode,
+	type ComponentType
+} from "react";
 import {
   Animated,
   Dimensions,
@@ -40,6 +46,7 @@ type Props = {
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
   delayLongPress?: number;
+  ImageComponent?: ComponentType<{ children: ReactNode; imageSrc: ImageSource; imageIndex: number }>;
   HeaderComponent?: ComponentType<{ imageIndex: number }>;
   FooterComponent?: ComponentType<{ imageIndex: number }>;
 };
@@ -50,7 +57,7 @@ const DEFAULT_DELAY_LONG_PRESS = 800;
 const SCREEN = Dimensions.get("screen");
 const SCREEN_WIDTH = SCREEN.width;
 
-function ImageViewing({
+function ImagesViewer({
   images,
   keyExtractor,
   imageIndex,
@@ -64,6 +71,7 @@ function ImageViewing({
   swipeToCloseEnabled,
   doubleTapToZoomEnabled,
   delayLongPress = DEFAULT_DELAY_LONG_PRESS,
+  ImageComponent,
   HeaderComponent,
   FooterComponent,
 }: Props) {
@@ -87,6 +95,16 @@ function ImageViewing({
     },
     [imageList]
   );
+
+  const imageRender = useCallback((imageSrc: ImageSource) => <ImageItem
+	onZoom={onZoom}
+	imageSrc={imageSrc}
+	onRequestClose={onRequestCloseEnhanced}
+	onLongPress={onLongPress}
+	delayLongPress={delayLongPress}
+	swipeToCloseEnabled={swipeToCloseEnabled}
+	doubleTapToZoomEnabled={doubleTapToZoomEnabled}
+	/>, [delayLongPress, swipeToCloseEnabled, doubleTapToZoomEnabled])
 
   if (!visible) {
     return null;
@@ -124,23 +142,19 @@ function ImageViewing({
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           initialScrollIndex={imageIndex}
-          getItem={(_, index) => images[index]}
+          getItem={(_: any, index: any) => images[index]}
           getItemCount={() => images.length}
-          getItemLayout={(_, index) => ({
+          getItemLayout={(_: any, index: any) => ({
             length: SCREEN_WIDTH,
             offset: SCREEN_WIDTH * index,
             index,
           })}
-          renderItem={({ item: imageSrc }) => (
-            <ImageItem
-              onZoom={onZoom}
-              imageSrc={imageSrc}
-              onRequestClose={onRequestCloseEnhanced}
-              onLongPress={onLongPress}
-              delayLongPress={delayLongPress}
-              swipeToCloseEnabled={swipeToCloseEnabled}
-              doubleTapToZoomEnabled={doubleTapToZoomEnabled}
-            />
+          renderItem={({ item: imageSrc }: any) => (
+			ImageComponent ? React.createElement(ImageComponent, {
+				children: imageRender(imageSrc),
+				imageSrc,
+				imageIndex: currentImageIndex,
+			}) : imageRender(imageSrc)
           )}
           onMomentumScrollEnd={onScroll}
           //@ts-ignore
@@ -185,8 +199,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const EnhancedImageViewing = (props: Props) => (
-  <ImageViewing key={props.imageIndex} {...props} />
+const EnhancedImagesViewer = (props: Props) => (
+  <ImagesViewer key={props.imageIndex} {...props} />
 );
 
-export default EnhancedImageViewing;
+export default EnhancedImagesViewer;
