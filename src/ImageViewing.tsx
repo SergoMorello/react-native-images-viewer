@@ -122,7 +122,7 @@ function ImagesViewer({
       supportedOrientations={["portrait"]}
       hardwareAccelerated
     >
-		<View style={rotate ? {transform: [{rotate}]} : null}>
+		<View style={[{flex: 1}, rotate ? {transform: [{rotate}]} : null]}>
 		<StatusBarManager presentationStyle={presentationStyle} />
       <View style={[styles.container, { opacity, backgroundColor }]}>
         <Animated.View style={[styles.header, { transform: headerTransform }]}>
