@@ -6,4 +6,10 @@
  *
  */
 
-export { default } from "./ImageViewing";
+export { default } from "./ImagesViewer";
+export type {
+	Dimensions,
+	Position,
+	OrientationsT,
+	ImageSource
+} from "./@types"

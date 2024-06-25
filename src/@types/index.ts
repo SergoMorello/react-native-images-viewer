@@ -18,4 +18,13 @@ export type Position = {
   y: number;
 };
 
+export const Orientations = [
+	'PORTRAIT',
+	'LANDSCAPE-LEFT',
+	'LANDSCAPE-RIGHT',
+	'PORTRAIT-UPSIDEDOWN'
+] as const;
+
+export type OrientationsT = typeof Orientations[number];
+
 export type ImageSource = ImageURISource | ImageRequireSource;

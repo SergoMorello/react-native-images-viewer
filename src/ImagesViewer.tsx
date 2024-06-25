@@ -11,7 +11,9 @@ import React, {
 	useRef,
 	useEffect,
 	type ReactNode,
-	type ComponentType
+	type ComponentType,
+	useMemo,
+	useState
 } from "react";
 import {
   Animated,
@@ -30,7 +32,7 @@ import StatusBarManager from "./components/StatusBarManager";
 import useAnimatedComponents from "./hooks/useAnimatedComponents";
 import useImageIndexChange from "./hooks/useImageIndexChange";
 import useRequestClose from "./hooks/useRequestClose";
-import { ImageSource } from "./@types";
+import { ImageSource, OrientationsT } from "./@types";
 
 type Props = {
   images: ImageSource[];
@@ -46,7 +48,7 @@ type Props = {
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
   delayLongPress?: number;
-  rotate?: string;
+  orientation?: OrientationsT;
   ImageComponent?: ComponentType<{ children: ReactNode; imageSrc: ImageSource; imageIndex: number }>;
   HeaderComponent?: ComponentType<{ imageIndex: number }>;
   FooterComponent?: ComponentType<{ imageIndex: number }>;
@@ -55,7 +57,7 @@ type Props = {
 const DEFAULT_ANIMATION_TYPE = "fade";
 const DEFAULT_BG_COLOR = "#000";
 const DEFAULT_DELAY_LONG_PRESS = 800;
-const SCREEN = Dimensions.get("screen");
+const SCREEN = Dimensions.get("window");
 const SCREEN_WIDTH = SCREEN.width;
 
 function ImagesViewer({
@@ -72,12 +74,13 @@ function ImagesViewer({
   swipeToCloseEnabled,
   doubleTapToZoomEnabled,
   delayLongPress = DEFAULT_DELAY_LONG_PRESS,
-  rotate,
+  orientation = 'PORTRAIT',
   ImageComponent,
   HeaderComponent,
   FooterComponent,
 }: Props) {
   const imageList = useRef<VirtualizedList<ImageSource>>(null);
+  const [fullScreen, setFullScreen] = useState(false);
   const [opacity, onRequestCloseEnhanced] = useRequestClose(onRequestClose);
   const [currentImageIndex, onScroll] = useImageIndexChange(imageIndex, SCREEN);
   const [headerTransform, footerTransform, toggleBarsVisible] =
@@ -89,6 +92,10 @@ function ImagesViewer({
     }
   }, [currentImageIndex]);
 
+  const fullScreenToggle = () => {
+	setFullScreen((status) => !status);
+  };
+
   const onZoom = useCallback(
     (isScaled: boolean) => {
       // @ts-ignore
@@ -98,20 +105,62 @@ function ImagesViewer({
     [imageList]
   );
 
+  const {
+	SCREEN_WIDTH,
+	SCREEN_HEIGHT
+	} = useMemo(() => {
+		if (orientation === 'LANDSCAPE-LEFT' || orientation === 'LANDSCAPE-RIGHT') {
+			return {
+				SCREEN_WIDTH: SCREEN.height,
+				SCREEN_HEIGHT: SCREEN.width
+			};
+		}
+		return {
+			SCREEN_WIDTH: SCREEN.width,
+			SCREEN_HEIGHT: SCREEN.height
+		};
+	}, [orientation]);
+
+  const {rotate, statusBarTranslucent} = useMemo(() => {
+	switch(orientation) {
+		case 'LANDSCAPE-LEFT':
+			return {
+				rotate: '90deg',
+				statusBarTranslucent: true
+			};
+		case 'PORTRAIT-UPSIDEDOWN':
+			return {
+				rotate: '180deg',
+				statusBarTranslucent: false
+			};
+		case 'LANDSCAPE-RIGHT':
+			return {
+				rotate: '270deg',
+				statusBarTranslucent: true
+			};
+		default:
+			return {
+				rotate: '0deg',
+				statusBarTranslucent: false
+			};
+	}
+  }, [orientation]);
+
   const imageRender = useCallback((imageSrc: ImageSource) => <ImageItem
-	onZoom={onZoom}
-	imageSrc={imageSrc}
-	onRequestClose={onRequestCloseEnhanced}
-	onLongPress={onLongPress}
-	delayLongPress={delayLongPress}
-	swipeToCloseEnabled={swipeToCloseEnabled}
-	doubleTapToZoomEnabled={doubleTapToZoomEnabled}
-	/>, [delayLongPress, swipeToCloseEnabled, doubleTapToZoomEnabled])
+		onZoom={onZoom}
+		imageSrc={imageSrc}
+		onRequestClose={onRequestCloseEnhanced}
+		onLongPress={onLongPress}
+		delayLongPress={delayLongPress}
+		swipeToCloseEnabled={swipeToCloseEnabled}
+		doubleTapToZoomEnabled={doubleTapToZoomEnabled}
+		orientation={orientation}
+	/>, [delayLongPress, swipeToCloseEnabled, doubleTapToZoomEnabled, orientation])
 
   if (!visible) {
     return null;
   }
-
+  
   return (
     <Modal
       transparent={presentationStyle === "overFullScreen"}
@@ -119,12 +168,13 @@ function ImagesViewer({
       presentationStyle={presentationStyle}
       animationType={animationType}
       onRequestClose={onRequestCloseEnhanced}
-      supportedOrientations={["portrait"]}
+      supportedOrientations={["portrait", "landscape-left"]}
+	  statusBarTranslucent={statusBarTranslucent}
       hardwareAccelerated
     >
-		<View style={[{flex: 1}, rotate ? {transform: [{rotate}]} : null]}>
-		<StatusBarManager presentationStyle={presentationStyle} />
-      <View style={[styles.container, { opacity, backgroundColor }]}>
+		<StatusBarManager presentationStyle={presentationStyle}/>
+      <View style={[styles.container, { opacity, backgroundColor, justifyContent: 'center', alignItems: 'center' }]}>
+		<View style={{height: SCREEN_HEIGHT, width: SCREEN_WIDTH, transform: [{rotate}]}}>
         <Animated.View style={[styles.header, { transform: headerTransform }]}>
           {typeof HeaderComponent !== "undefined" ? (
             React.createElement(HeaderComponent, {
@@ -178,8 +228,8 @@ function ImagesViewer({
             })}
           </Animated.View>
         )}
+		</View>
       </View>
-	</View>
     </Modal>
   );
 }
@@ -187,7 +237,7 @@ function ImagesViewer({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#000"
   },
   header: {
     position: "absolute",

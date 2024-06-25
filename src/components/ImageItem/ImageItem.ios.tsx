@@ -6,7 +6,7 @@
  *
  */
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Animated,
@@ -24,14 +24,12 @@ import useDoubleTapToZoom from "../../hooks/useDoubleTapToZoom";
 import useImageDimensions from "../../hooks/useImageDimensions";
 
 import { getImageStyles, getImageTransform } from "../../utils";
-import { ImageSource } from "../../@types";
+import type { ImageSource, OrientationsT } from "../../@types";
 import { ImageLoading } from "./ImageLoading";
 
 const SWIPE_CLOSE_OFFSET = 75;
 const SWIPE_CLOSE_VELOCITY = 1.55;
-const SCREEN = Dimensions.get("screen");
-const SCREEN_WIDTH = SCREEN.width;
-const SCREEN_HEIGHT = SCREEN.height;
+const DEVICE_SCREEN = Dimensions.get("window");
 
 type Props = {
   imageSrc: ImageSource;
@@ -41,6 +39,7 @@ type Props = {
   delayLongPress: number;
   swipeToCloseEnabled?: boolean;
   doubleTapToZoomEnabled?: boolean;
+  orientation?: OrientationsT;
 };
 
 const ImageItem = ({
@@ -51,11 +50,41 @@ const ImageItem = ({
   delayLongPress,
   swipeToCloseEnabled = true,
   doubleTapToZoomEnabled = true,
+  orientation
 }: Props) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [loaded, setLoaded] = useState(false);
   const [scaled, setScaled] = useState(false);
   const imageDimensions = useImageDimensions(imageSrc);
+
+  const {
+	SCREEN,
+	SCREEN_WIDTH,
+	SCREEN_HEIGHT,
+	SCREEN_RATIO
+	} = useMemo(() => {
+		if (orientation === 'LANDSCAPE-LEFT' || orientation === 'LANDSCAPE-RIGHT') {
+			return {
+				SCREEN_WIDTH: DEVICE_SCREEN.height,
+				SCREEN_HEIGHT: DEVICE_SCREEN.width,
+				SCREEN_RATIO: DEVICE_SCREEN.width * 2,
+				SCREEN: {
+					width: DEVICE_SCREEN.height,
+					height: DEVICE_SCREEN.width
+				}
+			};
+		}
+		return {
+			SCREEN_WIDTH: DEVICE_SCREEN.width,
+			SCREEN_HEIGHT: DEVICE_SCREEN.height,
+			SCREEN_RATIO: DEVICE_SCREEN.height * 2,
+			SCREEN: {
+				width: DEVICE_SCREEN.width,
+				height: DEVICE_SCREEN.height
+			}
+		};
+	}, [orientation]);
+
   const handleDoubleTap = useDoubleTapToZoom(scrollViewRef, scaled, SCREEN);
 
   const [translate, scale] = getImageTransform(imageDimensions, SCREEN);
@@ -117,12 +146,17 @@ const ImageItem = ({
     <View>
       <ScrollView
         ref={scrollViewRef}
-        style={styles.listItem}
+        style={{
+			width: SCREEN_WIDTH,
+			height: SCREEN_HEIGHT
+		}}
         pinchGestureEnabled
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         maximumZoomScale={maxScale}
-        contentContainerStyle={styles.imageScrollContainer}
+        contentContainerStyle={{
+			height: SCREEN_RATIO,
+		}}
         scrollEnabled={swipeToCloseEnabled}
         onScrollEndDrag={onScrollEndDrag}
         scrollEventThrottle={1}
@@ -146,15 +180,5 @@ const ImageItem = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  listItem: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-  },
-  imageScrollContainer: {
-    height: SCREEN_HEIGHT,
-  },
-});
 
 export default React.memo(ImageItem);

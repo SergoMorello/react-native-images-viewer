@@ -2,7 +2,7 @@
 
 > React Native modal component for viewing images as a sliding gallery.
 
-# include ImageRender
+# Update: The ImageRender method has been added, as well as the ability to change the orientation of the image
 
 [![npm version](https://badge.fury.io/js/react-native-image-viewing.svg)](https://badge.fury.io/js/react-native-image-viewing)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
@@ -69,6 +69,8 @@ const [visible, setIsVisible] = useState(false);
 | `backgroundColor`        | Background color of the modal in HEX (#000000EE)                                                    | string                                                      | false    |
 | `swipeToCloseEnabled`    | Close modal with swipe up or down: default `true`                                                   | boolean                                                     | false    |
 | `doubleTapToZoomEnabled` | Zoom image by double tap on it: default `true`                                                      | boolean                                                     | false    |
+| `orientation`      | Screen orientation | `PORTRAIT`, `LANDSCAPE-LEFT`, `LANDSCAPE-RIGHT`, `PORTRAIT-UPSIDEDOWN`    | false    |
+| `ImageRender`        | Image component, image uri, gets current `imageIndex` as a prop                                               | component, function                                         | false    |
 | `HeaderComponent`        | Header component, gets current `imageIndex` as a prop                                               | component, function                                         | false    |
 | `FooterComponent`        | Footer component, gets current `imageIndex` as a prop                                               | component, function                                         | false    |
 
